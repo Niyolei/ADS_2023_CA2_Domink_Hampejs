@@ -1,0 +1,9 @@
+﻿  Functions.cpp
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(154,2): error C2360: initialization of 'childIter' is skipped by 'case' label
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(151,22): message : see declaration of 'childIter'
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(157,2): error C2360: initialization of 'childIter' is skipped by 'case' label
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(151,22): message : see declaration of 'childIter'
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(162,2): error C2360: initialization of 'childIter' is skipped by 'case' label
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(151,22): message : see declaration of 'childIter'
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(165,2): error C2361: initialization of 'childIter' is skipped by 'default' label
+C:\Users\domin\OneDrive\Desktop\C++\GitRepo\CA2\CA2\Functions.cpp(151,22): message : see declaration of 'childIter'
