@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "CppUnitTest.h"
 #include "../CA2/Tree.h"
+#include "../CA2/TreeIterator.h"
+#include "../CA2/Dlist.h"
+#include "../CA2/DListNode.h"
+#include "../CA2/DListIterator.h"
 #include "../CA2/Functions.cpp"
 
 
@@ -14,7 +18,8 @@ namespace CA2Test
 		TEST_METHOD(FileNotFoundTest)
 		{
 			try {
-				Tree<DTO*>* tree = readXMl("XML_NotFound.xml");
+				Tree<DTO*> tree = Tree<DTO*>(nullptr);
+				readXMl("XML_NotValid.xml", tree);
 			}
 			catch (logic_error e) {
 				Assert::AreEqual("File not found", e.what());
@@ -24,8 +29,9 @@ namespace CA2Test
 		TEST_METHOD(FileFoundTest)
 		{
 			try {
-				Tree<DTO*>* tree = readXMl("XML_JustDir.xml");
-				Assert::IsNotNull(tree);
+				Tree<DTO*> tree = Tree<DTO*>(nullptr);
+				readXMl("../CA2_Test/XML_JustDir.xml", tree);
+				Assert::AreEqual("ADS_Single_LinkedList_Exercises", tree.data->name.c_str());
 			}
 			catch (logic_error e) {
 				Assert::Fail();
@@ -84,9 +90,10 @@ namespace CA2Test
 		}
 
 		TEST_METHOD(readXMLJustDirs) {
-			Tree<DTO*>* tree = readXMl("XML_JustDir.xml");
-			Assert::IsNotNull(tree);
-			Assert::IsNotNull(tree->data);
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("../CA2_Test/XML_JustDir.xml", tree);
+			Assert::IsNotNull(tree.data);
+			Assert::AreEqual(tree.count(), 2);
 		}
 
 	};

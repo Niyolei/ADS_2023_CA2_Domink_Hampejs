@@ -17,7 +17,8 @@ enum DataTag
 	length,
 	closeLength,
 	type,
-	closeType
+	closeType,
+	invalid
 };
 
 
@@ -63,6 +64,6 @@ string getDataFromTag(DataTag closeTag, stringstream& ss);
 DTO* getDirData(ifstream& fileStream);
 DTO* getFileData(ifstream& fileStream);
 void handleStuff(TreeIterator<DTO*>* iter, ifstream& fileStream);
-Tree<DTO*>* parseFile(ifstream& fileStream);
+void parseFile(ifstream& fileStream, Tree<DTO*>& emptyTree);
 void parseLine(string line);
-Tree<DTO*>* readXMl(const string& fileName);
+void readXMl(const string& fileName, Tree<DTO*>& emptyTree);

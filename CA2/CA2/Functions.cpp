@@ -82,6 +82,8 @@ DTO* getFileData(ifstream& fileStream) {
 	string line;
 	getline(fileStream, line);
 
+	cout << line << endl;
+
 	stringstream ss(line);
 	string name;
 	string length;
@@ -92,12 +94,16 @@ DTO* getFileData(ifstream& fileStream) {
 	{
 		name = getDataFromTag(closeName, ss);
 		getline(fileStream, line);
+		ss = stringstream(line);
+		cout << line << endl;
 		tag = parseTag(ss);
 	}
 	if (tag == DataTag::length)
 	{
 		length = getDataFromTag(closeLength, ss);
 		getline(fileStream, line);
+		ss = stringstream(line);
+		cout << line << endl;
 		tag = parseTag(ss);
 	}
 	if (tag == DataTag::type)
@@ -128,35 +134,52 @@ void handleStuff(TreeIterator<DTO*>* iter, ifstream& fileStream) {
 
 		switch (tag)
 		{
-		case directory:
-		{
-			DTO* data = getDirData(fileStream);
-			iter->insertChildAfter(data);
-			iter->childForth();
-			TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
-			handleStuff(childIter, fileStream);
-		}
-		break;
-		case closeDir:
-			handleStuff(iter, fileStream);
+			case directory:
+			{
+				DTO* data = getDirData(fileStream);
+				if (iter->childValid())
+				{
+					iter->insertChildAfter(data);
+				}
+				else
+				{
+					iter->appendChild(data);
+				}
+				iter->childForth();
+				TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
+				handleStuff(childIter, fileStream);
+			}
 			break;
-		case file:
-			//Handle file data
-			//Add new tree with data
-			//Advance iterator
-			break;
-		case closeFile:
-			//Check
-			break;
-		default:
-			break;
+			case closeDir:
+				handleStuff(iter, fileStream);
+				break;
+			case file:
+			{
+				DTO* data = getFileData(fileStream);
+				if (iter->childValid())
+				{
+					iter->insertChildAfter(data);
+				}
+				else
+				{
+					iter->appendChild(data);
+				}
+				iter->childForth();
+				handleStuff(iter, fileStream);
+			}
+				break;
+			case closeFile:
+				handleStuff(iter, fileStream);
+				break;
+			default:
+				break;
 		}
 	}
 }
 
 
 
-Tree<DTO*>* parseFile(ifstream& fileStream) {
+void parseFile(ifstream& fileStream, Tree<DTO*>& emptyTree) {
 	string line;
 	getline(fileStream, line);
 
@@ -164,18 +187,15 @@ Tree<DTO*>* parseFile(ifstream& fileStream) {
 
 	stringstream ss(line);
 
-	Tree<DTO*>* tree = nullptr;
-
 	DataTag tag = parseTag(ss);
 
 	if (tag == directory) {
 		DTO* data = getDirData(fileStream);
 		if (data != nullptr)
 		{
-			Tree<DTO*> help = Tree<DTO*>(data);
-			tree = &help;
-			TreeIterator<DTO*> iter = TreeIterator<DTO*>(tree);
-			handleStuff(&iter, fileStream);
+			emptyTree = Tree<DTO*>(data);
+			TreeIterator<DTO*>* iter = new TreeIterator<DTO*>(&emptyTree);
+			handleStuff(iter, fileStream);
 		}
 		else
 		{
@@ -185,7 +205,6 @@ Tree<DTO*>* parseFile(ifstream& fileStream) {
 	else {
 		logic_error("No main directory");
 	}
-	return tree;
 }
 
 void parseLine(string line) {
@@ -196,21 +215,19 @@ void parseLine(string line) {
 	}
 }
 
-Tree<DTO*>* readXMl(const string& fileName) {
+void readXMl(const string& fileName, Tree<DTO*>& emptyTree) {
 	stack<string> tagStack;
 	ifstream fileStream(fileName);
 
 	if (fileStream)
 	{
-		Tree<DTO*>* tree = parseFile(fileStream);
+		parseFile(fileStream, emptyTree);
 		fileStream.close();
-		cout << tree->data << endl;
-		return tree;
+		cout << emptyTree.data->name << endl;
 	}
 	else
 	{
 		logic_error("File not found");
-		return nullptr;
 	}
 }
 

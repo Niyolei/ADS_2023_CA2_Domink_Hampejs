@@ -18,17 +18,14 @@
 		  <type>HEAD</type>
 		</file>
 	</dir>
-	
 	<dir>
 	  <name>.vs</name>
 		<dir>
 		  <name>ADS_Single_LinkedList_Exercises</name>
 			<dir>
-			  <name>v17</name>
-				
+			  <name>v17</name>	
 			</dir>
 		</dir>
-		
 	</dir>
 	<dir>
 	  <name>Debug</name>
@@ -49,4 +46,3 @@
 		</file>
 	</dir>	
 </dir>
-
