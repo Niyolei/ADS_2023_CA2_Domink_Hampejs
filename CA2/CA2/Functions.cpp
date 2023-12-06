@@ -1,55 +1,10 @@
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stack>
-using namespace std;
-#include "Tree.h"
-#include"TreeIterator.h"
-
-
-enum DataTag
-{
-	directory,
-	closeDir,
-	file,
-	closeFile,
-	name,
-	closeName,
-	length,
-	closeLength,
-	type,
-	closeType
-};
-
-
-struct DTO
-{
-	DataTag tag;
-	string name;
-	int length;
-	string type;
-
-	DTO() {
-	}
-
-	DTO(DataTag tag, string name) {
-		this->tag = tag;
-		this->name = name;
-	}
-
-	DTO(DataTag tag, string name, int length, string type) {
-		this->tag = tag;
-		this->name = name;
-		this->length = length;
-		this->type = type;
-	}
-};
+#include "Functions.h"
 
 DataTag stringToDataTag(string str) {
-	if (str == "<dir") {
+	if (str == "dir") {
 		return directory;
 	}
-	else if (str == "<file") {
+	else if (str == "file") {
 		return file;
 	}
 	else if (str == "/dir") {
@@ -58,19 +13,19 @@ DataTag stringToDataTag(string str) {
 	else if (str == "/file") {
 		return closeFile;
 	}
-	else if (str == "<name") {
+	else if (str == "name") {
 		return name;
 	}
 	else if (str == "/name") {
 		return closeName;
 	}
-	else if (str == "<length") {
+	else if (str == "length") {
 		return length;
 	}
 	else if (str == "/length") {
 		return closeLength;
 	}
-	else if (str == "<type") {
+	else if (str == "type") {
 		return type;
 	}
 	else if (str == "/type") {
@@ -82,12 +37,19 @@ DataTag stringToDataTag(string str) {
 
 }
 
-string getDataFromTag(DataTag tag, stringstream& ss) {
+DataTag parseTag(stringstream& ss) {
+	string item;
+	getline(ss, item, '<');
+	getline(ss, item, '>');
+	return stringToDataTag(item);
+}
+
+string getDataFromTag(DataTag closeTag, stringstream& ss) {
 	string item;
 	string data;
 	getline(ss, data, '<');
 	getline(ss, item, '>');
-	if (stringToDataTag(item) == tag)
+	if (stringToDataTag(item) == closeTag)
 	{
 		return data;
 	}
@@ -98,18 +60,22 @@ DTO* getDirData(ifstream& fileStream) {
 	string line;
 	getline(fileStream, line);
 
+	cout << line << endl;
+
 	stringstream ss(line);
 
-	string name = getDataFromTag(closeName , ss);
+	DataTag tag = parseTag(ss);
 
-	if (name != "")
+	if (tag == name)
 	{
-		return new DTO(directory, name);
+		string name = getDataFromTag(closeName, ss);
+		if (name != "")
+		{
+			return new DTO(directory, name);
+		}
 	}
-	else
-	{
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
 DTO* getFileData(ifstream& fileStream) {
@@ -117,105 +83,109 @@ DTO* getFileData(ifstream& fileStream) {
 	getline(fileStream, line);
 
 	stringstream ss(line);
+	string name;
+	string length;
+	string type;
 
-	string name = getDataFromTag(closeName, ss);
-	getline(fileStream, line);
-	string length = getDataFromTag(closeLength, ss);
-	getline(fileStream, line);
-	string type = getDataFromTag(closeType, ss);
+	DataTag tag = parseTag(ss);
+	if (tag == DataTag::name)
+	{
+		name = getDataFromTag(closeName, ss);
+		getline(fileStream, line);
+		tag = parseTag(ss);
+	}
+	if (tag == DataTag::length)
+	{
+		length = getDataFromTag(closeLength, ss);
+		getline(fileStream, line);
+		tag = parseTag(ss);
+	}
+	if (tag == DataTag::type)
+	{
+		type = getDataFromTag(closeType, ss);
+	}
+
 
 	if (name != "" && length != "" && type != "")
 	{
 		return new DTO(file, name, stoi(length), type);
 	}
-	else
-	{
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
 void handleStuff(TreeIterator<DTO*>* iter, ifstream& fileStream) {
 
+
 	string line;
-	getline(fileStream, line);
-	stringstream ss(line);
-	string item;
-	getline(ss, item, '>');
-	DataTag tag = stringToDataTag(item);
-
-	switch (tag)
+	if (getline(fileStream, line))
 	{
-	case directory: 
-	{
-		iter->insertChildAfter(getDirData(fileStream));
-		iter->childForth();
-		TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
-		handleStuff(childIter, fileStream);
+		cout << line << endl;
+
+		stringstream ss(line);
+
+		DataTag tag = parseTag(ss);
+
+		switch (tag)
+		{
+		case directory:
+		{
+			DTO* data = getDirData(fileStream);
+			iter->insertChildAfter(data);
+			iter->childForth();
+			TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
+			handleStuff(childIter, fileStream);
+		}
+		break;
+		case closeDir:
+			handleStuff(iter, fileStream);
+			break;
+		case file:
+			//Handle file data
+			//Add new tree with data
+			//Advance iterator
+			break;
+		case closeFile:
+			//Check
+			break;
+		default:
+			break;
+		}
 	}
-		break;
-	case closeDir:
-		//Check
-		break;
-	case file:
-		//Handle file data
-		//Add new tree with data
-		//Advance iterator
-		break;
-	case closeFile:
-		//Check
-		break;
-	default:
-		break;
-	}
 }
 
 
-DataTag parseTag(stringstream& ss) {
-	string item;
-	getline(ss, item, '>');
-	return stringToDataTag(item);
-}
-
-string parseName(stringstream& ss) {
-	string item;
-	getline(ss, item, '<');
-	return item;
-}
 
 Tree<DTO*>* parseFile(ifstream& fileStream) {
 	string line;
 	getline(fileStream, line);
 
+	cout << line << endl;
+
 	stringstream ss(line);
 
-	Tree<DTO*> tree = Tree<DTO*>(nullptr);
-	DTO temp;
+	Tree<DTO*>* tree = nullptr;
 
-	temp.tag = parseTag(ss);
-	temp.name = parseName(ss);
+	DataTag tag = parseTag(ss);
 
-	if (temp.tag == directory)
-	{
-		tree = Tree<DTO*>(new DTO(temp));
-		if (getline(fileStream, line))
+	if (tag == directory) {
+		DTO* data = getDirData(fileStream);
+		if (data != nullptr)
 		{
-			temp.tag = parseTag(ss);
-			if (temp.tag != closeDir)
-			{
-				TreeIterator<DTO*> iter = TreeIterator<DTO*>(&tree);
-				
-			}
-
+			Tree<DTO*> help = Tree<DTO*>(data);
+			tree = &help;
+			TreeIterator<DTO*> iter = TreeIterator<DTO*>(tree);
+			handleStuff(&iter, fileStream);
+		}
+		else
+		{
+			logic_error("Invalid main directory");
 		}
 	}
-	else
-	{
+	else {
 		logic_error("No main directory");
 	}
-
-	
-
-	return &tree;
+	return tree;
 }
 
 void parseLine(string line) {
@@ -234,13 +204,13 @@ Tree<DTO*>* readXMl(const string& fileName) {
 	{
 		Tree<DTO*>* tree = parseFile(fileStream);
 		fileStream.close();
+		cout << tree->data << endl;
 		return tree;
 	}
 	else
 	{
-		cout << "File not found" << endl;
-		Tree<DTO*> tree = Tree<DTO*>(nullptr);
-		return &tree;
+		logic_error("File not found");
+		return nullptr;
 	}
 }
 

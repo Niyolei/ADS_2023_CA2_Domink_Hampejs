@@ -27,7 +27,9 @@
     <ClInclude Include="DListIterator.h" />
     <ClInclude Include="DListNode.h" />
     <ClInclude Include="Functions.h" />
-    <ClInclude Include="Tree.h" />
+    <ClInclude Include="Tree.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="TreeIterator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

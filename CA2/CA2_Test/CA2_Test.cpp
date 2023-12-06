@@ -13,14 +13,23 @@ namespace CA2Test
 	public:
 		TEST_METHOD(FileNotFoundTest)
 		{
-			Tree<DTO*>* tree = readXMl("test.xml");
-			Assert::IsNull(tree->getData());
+			try {
+				Tree<DTO*>* tree = readXMl("XML_NotFound.xml");
+			}
+			catch (logic_error e) {
+				Assert::AreEqual("File not found", e.what());
+			}
 		}
 
 		TEST_METHOD(FileFoundTest)
 		{
-			Tree<DTO*>* tree = readXMl("test.xml");
-			Assert::IsNotNull(tree->getData());
+			try {
+				Tree<DTO*>* tree = readXMl("XML_JustDir.xml");
+				Assert::IsNotNull(tree);
+			}
+			catch (logic_error e) {
+				Assert::Fail();
+			}
 		}
 
 		TEST_METHOD(ParseTagDirTest)
@@ -37,6 +46,13 @@ namespace CA2Test
 			Assert::AreEqual((int)file, (int)tag);
 		}
 
+		TEST_METHOD(ParseTagWithIndent)
+		{
+			stringstream ss("   <file>");
+			DataTag tag = parseTag(ss);
+			Assert::AreEqual((int)file, (int)tag);
+		}
+
 		TEST_METHOD(ParseTagInvalidTest)
 		{
 			stringstream ss("<invalid>");
@@ -49,16 +65,28 @@ namespace CA2Test
 		}
 
 		TEST_METHOD(GetDataFromTag_ValidTest) {
-			stringstream ss("test</name>");
-			string data = getDataFromTag(DataTag::name,ss);
-			Assert::AreEqual("test", data.c_str());
+			stringstream ss("ADS_Single_LinkedList_Exercises</name>");
+			string data = getDataFromTag(closeName, ss);
+			Assert::AreEqual("ADS_Single_LinkedList_Exercises", data.c_str());
 		}
 
 		TEST_METHOD(GetDataFromTag_InvalidTest) {
 			stringstream ss("test</name>");
 			string data = getDataFromTag(DataTag::directory, ss);
 			Assert::AreEqual("", data.c_str());
-		
+		}
+
+		TEST_METHOD(ParseTagAndGetDataValidName) {
+			stringstream ss("	<name>ADS_Single_LinkedList_Exercises</name>");
+			DataTag tag = parseTag(ss);
+			string data = getDataFromTag(closeName, ss);
+			Assert::AreEqual("ADS_Single_LinkedList_Exercises", data.c_str());
+		}
+
+		TEST_METHOD(readXMLJustDirs) {
+			Tree<DTO*>* tree = readXMl("XML_JustDir.xml");
+			Assert::IsNotNull(tree);
+			Assert::IsNotNull(tree->data);
 		}
 
 	};

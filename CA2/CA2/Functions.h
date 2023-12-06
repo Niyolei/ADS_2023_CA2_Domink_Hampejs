@@ -1,0 +1,68 @@
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <stack>
+using namespace std;
+#include "Tree.h"
+#include"TreeIterator.h"
+
+enum DataTag
+{
+	directory,
+	closeDir,
+	file,
+	closeFile,
+	name,
+	closeName,
+	length,
+	closeLength,
+	type,
+	closeType
+};
+
+
+
+struct DTO
+{
+	DataTag tag;
+	string name;
+	int length;
+	string type;
+
+	DTO(DTO& other) {
+		this->tag = other.tag;
+		this->name = other.name;
+		this->length = other.length;
+		this->type = other.type;
+	}
+
+	DTO(DataTag tag, string name) {
+		this->tag = tag;
+		this->name = name;
+	}
+
+	DTO(DataTag tag, string name, int length, string type) {
+		this->tag = tag;
+		this->name = name;
+		this->length = length;
+		this->type = type;
+	}
+
+	void operator=(DTO& other) {
+		this->tag = other.tag;
+		this->name = other.name;
+		this->length = other.length;
+		this->type = other.type;
+	}
+
+};
+
+DataTag stringToDataTag(string str);
+DataTag parseTag(stringstream& ss);
+string getDataFromTag(DataTag closeTag, stringstream& ss);
+DTO* getDirData(ifstream& fileStream);
+DTO* getFileData(ifstream& fileStream);
+void handleStuff(TreeIterator<DTO*>* iter, ifstream& fileStream);
+Tree<DTO*>* parseFile(ifstream& fileStream);
+void parseLine(string line);
+Tree<DTO*>* readXMl(const string& fileName);
