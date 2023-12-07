@@ -30,10 +30,11 @@ namespace CA2Test
 		{
 			try {
 				Tree<DTO*> tree = Tree<DTO*>(nullptr);
-				readXMl("../CA2_Test/XML_JustDir.xml", tree);
+				readXMl("../CA2_Test/vs_sample_simple.xml", tree);
 				Assert::AreEqual("ADS_Single_LinkedList_Exercises", tree.data->name.c_str());
 			}
 			catch (logic_error e) {
+				Logger::WriteMessage(e.what());
 				Assert::Fail();
 			}
 		}
@@ -91,9 +92,27 @@ namespace CA2Test
 
 		TEST_METHOD(readXMLJustDirs) {
 			Tree<DTO*> tree = Tree<DTO*>(nullptr);
-			readXMl("../CA2_Test/XML_JustDir.xml", tree);
+			readXMl("../CA2_Test/vs_sample_simple.xml", tree);
 			Assert::IsNotNull(tree.data);
 			Assert::AreEqual(tree.count(), 2);
+		}
+
+		TEST_METHOD(VerifyTagValidTest) {
+			stack<DataTag> tags;
+			tags.push(directory);
+
+			bool outcome = verifyTag(closeDir, tags);
+
+			Assert::IsTrue(outcome);
+		}
+
+		TEST_METHOD(VerifyTagInvalidTest) {
+			stack<DataTag> tags;
+			tags.push(directory);
+
+			bool outcome = verifyTag(closeFile, tags);
+
+			Assert::IsFalse(outcome);
 		}
 
 	};
