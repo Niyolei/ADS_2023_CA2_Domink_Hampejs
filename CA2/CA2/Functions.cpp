@@ -123,7 +123,6 @@ DTO* getFileData(ifstream& fileStream) {
 bool verifyTag(DataTag tag, stack<DataTag>& verifier) {
 	if (tag == directory || tag == file)
 	{
-		cout << "Pushing " << tag << endl;
 		verifier.push(tag);
 		return true;
 	}
@@ -131,7 +130,6 @@ bool verifyTag(DataTag tag, stack<DataTag>& verifier) {
 	{
 		if ((int)verifier.top() == (int)tag - 1)
 		{
-			cout << "Popping " << verifier.top() << endl;
 			verifier.pop();
 			return true;
 		}
@@ -143,9 +141,14 @@ bool verifyTag(DataTag tag, stack<DataTag>& verifier) {
 	return false;
 }
 
+void validateDTO(DTO* data) {
+	if (data == nullptr)
+	{
+		throw logic_error("Invalid data");
+	}
+}
+
 void handleSection(TreeIterator<DTO*>* iter, ifstream& fileStream, stack<DataTag>& verifier) {
-
-
 	string line;
 	if (getline(fileStream, line))
 	{
@@ -155,65 +158,60 @@ void handleSection(TreeIterator<DTO*>* iter, ifstream& fileStream, stack<DataTag
 
 		DataTag tag = parseTag(ss);
 
+		if (!verifyTag(tag, verifier))
+		{
+			throw logic_error("Nested incorectly");
+		}
+
 		switch (tag)
 		{
-		case directory:
-		{
-			if (!verifyTag(tag, verifier))
+			case directory:
 			{
-				throw logic_error("Nested incorectly");
+				DTO* data = getDirData(fileStream);
+
+				validateDTO(data);
+
+				if (iter->childValid())
+				{
+					iter->insertChildAfter(data);
+				}
+				else
+				{
+					iter->appendChild(data);
+				}
+				iter->childForth();
+				TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
+				handleSection(childIter, fileStream, verifier);
 			}
-			DTO* data = getDirData(fileStream);
-			if (iter->childValid())
+				break;
+			case closeDir:
 			{
-				iter->insertChildAfter(data);
+				handleSection(iter, fileStream, verifier);
 			}
-			else
+				break;
+			case file:
 			{
-				iter->appendChild(data);
+				DTO* data = getFileData(fileStream);
+
+				validateDTO(data);
+
+				if (iter->childValid())
+				{
+					iter->insertChildAfter(data);
+				}
+				else
+				{
+					iter->appendChild(data);
+				}
+				iter->childForth();
+				handleSection(iter, fileStream, verifier);
 			}
-			iter->childForth();
-			TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
-			handleSection(childIter, fileStream, verifier);
-		}
-		break;
-		case closeDir:
-		{
-			if (!verifyTag(tag, verifier))
+				break;
+			case closeFile:
 			{
-				throw logic_error("Nested incorectly");
+				handleSection(iter, fileStream, verifier);
 			}
-			handleSection(iter, fileStream, verifier);
-		}
-			break;
-		case file:
-		{
-			if (!verifyTag(tag, verifier))
-			{
-				throw logic_error("Nested incorectly");
-			}
-			DTO* data = getFileData(fileStream);
-			if (iter->childValid())
-			{
-				iter->insertChildAfter(data);
-			}
-			else
-			{
-				iter->appendChild(data);
-			}
-			iter->childForth();
-			handleSection(iter, fileStream, verifier);
-		}
-		break;
-		case closeFile:
-		{
-			if (!verifyTag(tag, verifier))
-			{
-				throw logic_error("Nested incorectly");
-			}
-			handleSection(iter, fileStream, verifier);
-		}
-		break;
+				break;
 			default:
 				break;
 		}

@@ -4,7 +4,7 @@
 
 int main() {
 	Tree<DTO*> tree = Tree<DTO*>(nullptr);
-	readXMl("../CA2_Test/vs_sample_simple.xml", tree);
+	readXMl("../x64/Debug/vs_sample_simple.xml", tree);
 	cout << "Testing" << endl;
 	cout << tree.data->name << endl;
 	cout << tree.count() << endl;

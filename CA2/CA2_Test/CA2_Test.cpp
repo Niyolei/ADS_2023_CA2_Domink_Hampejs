@@ -30,7 +30,7 @@ namespace CA2Test
 		{
 			try {
 				Tree<DTO*> tree = Tree<DTO*>(nullptr);
-				readXMl("../CA2_Test/vs_sample_simple.xml", tree);
+				readXMl("vs_sample_simple.xml", tree);
 				Assert::AreEqual("ADS_Single_LinkedList_Exercises", tree.data->name.c_str());
 			}
 			catch (logic_error e) {
@@ -92,7 +92,7 @@ namespace CA2Test
 
 		TEST_METHOD(readXMLJustDirs) {
 			Tree<DTO*> tree = Tree<DTO*>(nullptr);
-			readXMl("../CA2_Test/vs_sample_simple.xml", tree);
+			readXMl("XML_JustDir.xml", tree);
 			Assert::IsNotNull(tree.data);
 			Assert::AreEqual(tree.count(), 2);
 		}
