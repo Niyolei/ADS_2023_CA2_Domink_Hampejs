@@ -295,3 +295,44 @@ bool getItemBasedOnPath(Tree<DTO*>* tree, string& path, Tree<DTO*>& foundItem) {
 		return false;
 }
 
+int getFolderContentAmount(Tree<DTO*>* tree) {
+	if (tree->data->tag != directory)
+	{
+		return -1;
+	}
+
+	int amount = 0;
+	TreeIterator<DTO*>* iter = new TreeIterator<DTO*>(tree);
+	while (iter->childValid())
+	{
+		amount += iter->childIter.item()->count();
+		iter->childForth();
+	}
+	return amount;
+}
+
+int getFolderMemoryUsage(Tree<DTO*>* tree)
+{
+	if (tree->data->tag != directory)
+	{
+		return -1;
+	}
+	int amount = 0;
+	queue<Tree<DTO*>*> q;
+	q.push(tree);
+	while (!q.empty()) {
+		if (q.front()->data->tag == file)
+		{
+			amount += q.front()->data->length;
+		}
+		DListIterator<Tree<DTO*>*> iter = q.front()->children->getIterator();
+		while (iter.isValid())
+		{
+			q.push(iter.item());
+			iter.advance();
+		}
+		q.pop();
+	}
+	return amount;
+}
+

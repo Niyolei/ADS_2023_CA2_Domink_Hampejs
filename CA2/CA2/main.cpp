@@ -26,5 +26,6 @@ int main() {
 	getItemBasedOnPath(&tree, path, foundItem);
 
 	displayTree(TreeIterator<DTO*>(&tree), "");
+
 	return 0;
 }

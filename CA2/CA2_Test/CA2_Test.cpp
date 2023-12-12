@@ -191,6 +191,87 @@ namespace CA2Test
 			Assert::IsTrue(getItemBasedOnPath(&tree, path, foundItem));
 			Assert::AreEqual("config", foundItem.data->name.c_str());
 		};
+
+		TEST_METHOD(getItemBasedOnPath_InvalidPath) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git/config/invalid";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			Assert::IsFalse(getItemBasedOnPath(&tree, path, foundItem));
+		};
+
+		TEST_METHOD(getItemBasedOnPath_InvalidPathRoot) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single.git/config";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			Assert::IsFalse(getItemBasedOnPath(&tree, path, foundItem));
+		};
+
+		TEST_METHOD(getFolderContentAmount_FolderWithJustFiles) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(3, getFolderContentAmount(&foundItem));
+		};
+
+		TEST_METHOD(getFolderContentAmount_FolderWithJustFolders) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.vs";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(2, getFolderContentAmount(&foundItem));
+		};
+
+		TEST_METHOD(getFolderContentAmount_FolderWithFoldersAndFiles) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(11, getFolderContentAmount(&foundItem));
+		};
+
+		TEST_METHOD(getFolderContentAmount_File) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git/config";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(-1, getFolderContentAmount(&foundItem));
+		};
+
+		TEST_METHOD(getFolderMemoryUsage_EmptyFolder) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.vs";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(0, getFolderMemoryUsage(&foundItem));
+		};
+
+		TEST_METHOD(getFolderMemoryUsage_FolderWithJustFiles) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(449, getFolderMemoryUsage(&foundItem));
+		};
+
+		TEST_METHOD(getFolderMemoryUsage_File) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git/config";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			getItemBasedOnPath(&tree, path, foundItem);
+			Assert::AreEqual(-1, getFolderMemoryUsage(&foundItem));
+		};
+
+
 	
 	};
 }
