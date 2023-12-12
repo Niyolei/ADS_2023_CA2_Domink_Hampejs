@@ -73,3 +73,4 @@ void readXMl(const string& fileName, Tree<DTO*>& emptyTree);
 bool getItemBasedOnPath(Tree<DTO*>* tree, string& path, Tree<DTO*>& foundItem);
 int getFolderContentAmount(Tree<DTO*>* tree);
 int getFolderMemoryUsage(Tree<DTO*>* tree);
+bool getFilePath(string& searched, TreeIterator<DTO*> tree,string& path, bool isTop);

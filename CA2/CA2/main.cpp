@@ -27,5 +27,12 @@ int main() {
 
 	displayTree(TreeIterator<DTO*>(&tree), "");
 
+	string searched = "config";
+	path = "";
+	TreeIterator<DTO*> iter(&tree);
+
+	getFilePath(searched,iter, path,true);
+	cout << path << endl;
+
 	return 0;
 }

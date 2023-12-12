@@ -271,6 +271,45 @@ namespace CA2Test
 			Assert::AreEqual(-1, getFolderMemoryUsage(&foundItem));
 		};
 
+		TEST_METHOD(getFilePath_InvalidSearch) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string searched = "invalid";
+			string path = "";
+			TreeIterator<DTO*> iter(&tree);
+			Assert::IsFalse(getFilePath(searched, iter, path, true));
+		};
+
+		TEST_METHOD(getFilePath_Root) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string searched = "ADS_Single_LinkedList_Exercises";
+			string path = "";
+			TreeIterator<DTO*> iter(&tree);
+			Assert::IsTrue(getFilePath(searched, iter, path, true));
+			Assert::AreEqual("ADS_Single_LinkedList_Exercises", path.c_str());
+		};
+
+		TEST_METHOD(getFilePath_ChildDir) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string searched = ".git";
+			string path = "";
+			TreeIterator<DTO*> iter(&tree);
+			Assert::IsTrue(getFilePath(searched, iter, path, true));
+			Assert::AreEqual("ADS_Single_LinkedList_Exercises/.git", path.c_str());
+		};
+
+		TEST_METHOD(getFilePath_ChildFile) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string searched = "config";
+			string path = "";
+			TreeIterator<DTO*> iter(&tree);
+			Assert::IsTrue(getFilePath(searched, iter, path, true));
+			Assert::AreEqual("ADS_Single_LinkedList_Exercises/.git/config", path.c_str());
+		};
+
 
 	
 	};

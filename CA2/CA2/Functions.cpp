@@ -336,3 +336,36 @@ int getFolderMemoryUsage(Tree<DTO*>* tree)
 	return amount;
 }
 
+
+bool getFilePath(string& searched, TreeIterator<DTO*> iter, string& path, bool isTop) {
+	bool found = false;
+	if (iter.item()->name == searched)
+	{
+		if(isTop)
+			path += iter.item()->name;
+		else
+			path += "/" + iter.item()->name;
+		return true;
+	}
+	while (iter.childValid()) {
+		TreeIterator<DTO*> child(iter);
+		child.down();
+		found = getFilePath(searched, child, path, false);
+		if (found)
+		{
+			if (isTop)
+				path = iter.item()->name + path;
+			else
+				path = "/" + iter.item()->name + path;
+			return true;
+		}
+		iter.childForth();
+	}
+	return false;
+}
+
+
+
+
+
+
