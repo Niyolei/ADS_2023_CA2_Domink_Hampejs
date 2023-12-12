@@ -68,3 +68,5 @@ void handleSection(TreeIterator<DTO*>* iter, ifstream& fileStream, stack<DataTag
 void parseFile(ifstream& fileStream, Tree<DTO*>& emptyTree);
 void parseLine(string line);
 void readXMl(const string& fileName, Tree<DTO*>& emptyTree);
+
+bool getItemBasedOnPath(Tree<DTO*>* tree, string& path, Tree<DTO*>& foundItem);

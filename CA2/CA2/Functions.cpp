@@ -144,13 +144,13 @@ bool verifyTag(DataTag tag, stack<DataTag>& verifier) {
 void validateDTO(DTO* data) {
 	if (data == nullptr)
 	{
-		throw logic_error("Invalid data");
+		throw logic_error("Invalid Data");
 	}
 }
 
 void handleSection(TreeIterator<DTO*>* iter, ifstream& fileStream, stack<DataTag>& verifier) {
 	string line;
-	if (getline(fileStream, line))
+	while (getline(fileStream, line))
 	{
 		cout << line << endl;
 
@@ -160,60 +160,42 @@ void handleSection(TreeIterator<DTO*>* iter, ifstream& fileStream, stack<DataTag
 
 		if (!verifyTag(tag, verifier))
 		{
-			throw logic_error("Nested incorectly");
+			throw logic_error("Invalid Nesting");
 		}
 
 		switch (tag)
 		{
-			case directory:
-			{
-				DTO* data = getDirData(fileStream);
+		case directory:
+		{
+			DTO* data = getDirData(fileStream);
 
-				validateDTO(data);
+			validateDTO(data);
 
-				if (iter->childValid())
-				{
-					iter->insertChildAfter(data);
-				}
-				else
-				{
-					iter->appendChild(data);
-				}
-				iter->childForth();
-				TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
-				handleSection(childIter, fileStream, verifier);
-			}
-				break;
-			case closeDir:
-			{
-				handleSection(iter, fileStream, verifier);
-			}
-				break;
-			case file:
-			{
-				DTO* data = getFileData(fileStream);
+		
+			iter->appendChild(data);
+			iter->childEnd();
+			
+			iter->down();
+		}
+		break;
+		case closeDir:
+		{
+			iter->up();
+			iter->childBack();
+		}
+		break;
+		case file:
+		{
+			DTO* data = getFileData(fileStream);
 
-				validateDTO(data);
+			validateDTO(data);
 
-				if (iter->childValid())
-				{
-					iter->insertChildAfter(data);
-				}
-				else
-				{
-					iter->appendChild(data);
-				}
-				iter->childForth();
-				handleSection(iter, fileStream, verifier);
-			}
-				break;
-			case closeFile:
-			{
-				handleSection(iter, fileStream, verifier);
-			}
-				break;
-			default:
-				break;
+			iter->appendChild(data);
+			iter->childEnd();
+		}
+		break;
+		default:
+			break;
 		}
 	}
 }
@@ -241,7 +223,7 @@ void parseFile(ifstream& fileStream, Tree<DTO*>& emptyTree) {
 			handleSection(iter, fileStream, verifier);
 			if (!verifier.empty())
 			{
-				throw logic_error("Nested incorrectly");
+				throw logic_error("Invalid Nesting");
 			}
 		}
 		else
@@ -275,5 +257,41 @@ void readXMl(const string& fileName, Tree<DTO*>& emptyTree) {
 	{
 		throw logic_error("File not found");
 	}
+}
+
+bool getItemBasedOnPath(Tree<DTO*>* tree, string& path, Tree<DTO*>& foundItem) {
+	stringstream ss(path);
+	string item;
+	bool found = true;
+	getline(ss, item, '/');
+	if (tree->getData()->name == item)
+	{
+		TreeIterator<DTO*>* iter = new TreeIterator<DTO*>(tree);
+		while (getline(ss, item, '/'))
+		{
+			found = false;
+			while (iter->childValid() && !found)
+			{
+				if (iter->childItem()->name == item)
+				{
+					iter->down();
+					found = true;
+				}
+				else
+				{
+					iter->childForth();
+				}
+			}
+		}
+		if (found)
+		{
+			foundItem = *iter->node;
+			return true;
+		}
+		else
+			return false;
+	}
+	else 
+		return false;
 }
 

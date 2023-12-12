@@ -155,7 +155,7 @@ bool TreeIterator<T>::childValid()
 template <class T>
 T TreeIterator<T>::childItem()
 {
-	return childIter->node->data;
+	return childIter.item()->data;
 }
 
 template <class T>

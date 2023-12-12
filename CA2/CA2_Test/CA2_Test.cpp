@@ -97,6 +97,53 @@ namespace CA2Test
 			Assert::AreEqual(tree.count(), 2);
 		}
 
+		TEST_METHOD(readXMLVSSimple) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			Assert::IsNotNull(tree.data);
+			Assert::AreEqual(12, tree.count());
+		}
+
+		TEST_METHOD(readXMLVSSimpleNesting) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			Assert::IsNotNull(tree.data);
+			Assert::AreEqual(tree.children->getIterator().item()->count(),4);
+			
+		}
+
+	
+		TEST_METHOD(readXMLInvalidName) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			try {
+				readXMl("vs_sample_InvalidName.xml", tree);
+			}
+			catch (logic_error e) {
+				Assert::AreEqual("Invalid Data", e.what());
+			}
+		}
+
+		TEST_METHOD(readXMLInvalidNesting) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			try {
+				readXMl("vs_sample_InvalidNesting.xml", tree);
+			}
+			catch (logic_error e) {
+				Assert::AreEqual("Invalid Nesting", e.what());
+			}
+		}
+
+		
+		TEST_METHOD(readXMLInvalidTag) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			try {
+				readXMl("vs_sample_InvalidSyntax.xml", tree);
+			}
+			catch (logic_error e) {
+				Assert::AreEqual("Invalid tag", e.what());
+			}
+		}
+
 		TEST_METHOD(VerifyTagValidTest) {
 			stack<DataTag> tags;
 			tags.push(directory);
@@ -114,6 +161,36 @@ namespace CA2Test
 
 			Assert::IsFalse(outcome);
 		}
+	};
 
+	TEST_CLASS(TreeFucntionsTests)
+	{
+		TEST_METHOD(getItemBasedOnPath_Root) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("XML_JustDir.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			Assert::IsTrue(getItemBasedOnPath(&tree, path, foundItem));
+			Assert::AreEqual("ADS_Single_LinkedList_Exercises", foundItem.data->name.c_str());
+		};
+
+		TEST_METHOD(getItemBasedOnPath_ChildDir) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			Assert::IsTrue(getItemBasedOnPath(&tree, path, foundItem));
+			Assert::AreEqual(".git", foundItem.data->name.c_str());
+		};
+
+		TEST_METHOD(getItemBasedOnPath_ChildFile) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git/config";
+			Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
+			Assert::IsTrue(getItemBasedOnPath(&tree, path, foundItem));
+			Assert::AreEqual("config", foundItem.data->name.c_str());
+		};
+	
 	};
 }
