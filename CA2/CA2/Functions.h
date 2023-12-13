@@ -74,3 +74,5 @@ bool getItemBasedOnPath(Tree<DTO*>* tree, string& path, Tree<DTO*>& foundItem);
 int getFolderContentAmount(Tree<DTO*>* tree);
 int getFolderMemoryUsage(Tree<DTO*>* tree);
 bool getFilePath(string& searched, TreeIterator<DTO*> tree,string& path, bool isTop);
+void displayFolder(TreeIterator<DTO*> tree);
+bool displayFolderByPath(Tree<DTO*>* tree, string& path);

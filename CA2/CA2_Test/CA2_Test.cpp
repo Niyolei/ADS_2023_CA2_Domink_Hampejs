@@ -310,6 +310,20 @@ namespace CA2Test
 			Assert::AreEqual("ADS_Single_LinkedList_Exercises/.git/config", path.c_str());
 		};
 
+		TEST_METHOD(displayFolderByPath_Valid) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git";
+			Assert::IsTrue(displayFolderByPath(&tree, path));
+		};
+
+		TEST_METHOD(displayFolderByPath_Invalid) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			string path = "ADS_Single_LinkedList_Exercises/.git/invalid";
+			Assert::IsFalse(displayFolderByPath(&tree, path));
+		};
+
 
 	
 	};

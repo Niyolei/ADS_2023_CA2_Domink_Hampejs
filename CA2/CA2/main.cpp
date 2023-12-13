@@ -2,16 +2,7 @@
 #include "Functions.h"
 #include "Tree.h"
 
-void displayTree(TreeIterator<DTO*> iter, string indent)
-{
-	cout << indent << iter.item()->name << endl;
-	while (iter.childValid()) {
-		TreeIterator<DTO*> child(iter);
-		child.down();
-		displayTree(child, indent + "\t");
-		iter.childForth();
-	}
-}
+
 
 int main() {
 	Tree<DTO*> tree = Tree<DTO*>(nullptr);
@@ -25,14 +16,21 @@ int main() {
 	Tree<DTO*> foundItem = Tree<DTO*>(nullptr);
 	getItemBasedOnPath(&tree, path, foundItem);
 
-	displayTree(TreeIterator<DTO*>(&tree), "");
+	displayFolder(TreeIterator<DTO*>(&tree));
 
 	string searched = "config";
 	path = "";
 	TreeIterator<DTO*> iter(&tree);
 
 	getFilePath(searched,iter, path,true);
-	cout << path << endl;
+	cout << "\n" << path << endl;
+	cout << endl;
+
+	iter.down();
+	displayFolder(iter);
+
+	path = "ADS_Single_LinkedList_Exercises";
+	displayFolderByPath(&tree, path);
 
 	return 0;
 }

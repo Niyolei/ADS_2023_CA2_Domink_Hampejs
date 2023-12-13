@@ -364,6 +364,33 @@ bool getFilePath(string& searched, TreeIterator<DTO*> iter, string& path, bool i
 	return false;
 }
 
+void displayFolder(TreeIterator<DTO*> iter)
+{
+	cout << iter.item()->name << endl;
+	while (iter.childValid()) {
+		cout << "\t" << iter.childItem()->name;
+		if (iter.childItem()->tag == file)
+		{
+			cout << "\t(size: " << iter.childItem()->length << " b)";
+		}
+		cout << endl;
+		iter.childForth();
+	}
+}
+
+bool displayFolderByPath(Tree<DTO*>* tree, string& path) {
+	Tree<DTO*>* foundItem = new Tree<DTO*>(nullptr);
+	if (getItemBasedOnPath(tree, path, *foundItem))
+	{
+		displayFolder(TreeIterator<DTO*>(foundItem));
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 
 
 
