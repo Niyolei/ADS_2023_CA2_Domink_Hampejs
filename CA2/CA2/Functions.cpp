@@ -1,55 +1,10 @@
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stack>
-using namespace std;
-#include "Tree.h"
-#include"TreeIterator.h"
-
-
-enum DataTag
-{
-	directory,
-	closeDir,
-	file,
-	closeFile,
-	name,
-	closeName,
-	length,
-	closeLength,
-	type,
-	closeType
-};
-
-
-struct DTO
-{
-	DataTag tag;
-	string name;
-	int length;
-	string type;
-
-	DTO() {
-	}
-
-	DTO(DataTag tag, string name) {
-		this->tag = tag;
-		this->name = name;
-	}
-
-	DTO(DataTag tag, string name, int length, string type) {
-		this->tag = tag;
-		this->name = name;
-		this->length = length;
-		this->type = type;
-	}
-};
+#include "Functions.h"
 
 DataTag stringToDataTag(string str) {
-	if (str == "<dir") {
+	if (str == "dir") {
 		return directory;
 	}
-	else if (str == "<file") {
+	else if (str == "file") {
 		return file;
 	}
 	else if (str == "/dir") {
@@ -58,19 +13,19 @@ DataTag stringToDataTag(string str) {
 	else if (str == "/file") {
 		return closeFile;
 	}
-	else if (str == "<name") {
+	else if (str == "name") {
 		return name;
 	}
 	else if (str == "/name") {
 		return closeName;
 	}
-	else if (str == "<length") {
+	else if (str == "length") {
 		return length;
 	}
 	else if (str == "/length") {
 		return closeLength;
 	}
-	else if (str == "<type") {
+	else if (str == "type") {
 		return type;
 	}
 	else if (str == "/type") {
@@ -82,12 +37,19 @@ DataTag stringToDataTag(string str) {
 
 }
 
-string getDataFromTag(DataTag tag, stringstream& ss) {
+DataTag parseTag(stringstream& ss) {
+	string item;
+	getline(ss, item, '<');
+	getline(ss, item, '>');
+	return stringToDataTag(item);
+}
+
+string getDataFromTag(DataTag closeTag, stringstream& ss) {
 	string item;
 	string data;
 	getline(ss, data, '<');
 	getline(ss, item, '>');
-	if (stringToDataTag(item) == tag)
+	if (stringToDataTag(item) == closeTag)
 	{
 		return data;
 	}
@@ -98,124 +60,180 @@ DTO* getDirData(ifstream& fileStream) {
 	string line;
 	getline(fileStream, line);
 
+	cout << line << endl;
+
 	stringstream ss(line);
 
-	string name = getDataFromTag(closeName , ss);
+	DataTag tag = parseTag(ss);
 
-	if (name != "")
+	if (tag == name)
 	{
-		return new DTO(directory, name);
+		string name = getDataFromTag(closeName, ss);
+		if (name != "")
+		{
+			return new DTO(directory, name);
+		}
 	}
-	else
-	{
-		return nullptr;
-	}
+
+	return nullptr;
 }
 
 DTO* getFileData(ifstream& fileStream) {
 	string line;
 	getline(fileStream, line);
 
-	stringstream ss(line);
+	cout << line << endl;
 
-	string name = getDataFromTag(closeName, ss);
-	getline(fileStream, line);
-	string length = getDataFromTag(closeLength, ss);
-	getline(fileStream, line);
-	string type = getDataFromTag(closeType, ss);
+	stringstream ss(line);
+	string name;
+	string length;
+	string type;
+
+	DataTag tag = parseTag(ss);
+	if (tag == DataTag::name)
+	{
+		name = getDataFromTag(closeName, ss);
+		getline(fileStream, line);
+		ss = stringstream(line);
+		cout << line << endl;
+		tag = parseTag(ss);
+	}
+	if (tag == DataTag::length)
+	{
+		length = getDataFromTag(closeLength, ss);
+		getline(fileStream, line);
+		ss = stringstream(line);
+		cout << line << endl;
+		tag = parseTag(ss);
+	}
+	if (tag == DataTag::type)
+	{
+		type = getDataFromTag(closeType, ss);
+	}
+
 
 	if (name != "" && length != "" && type != "")
 	{
 		return new DTO(file, name, stoi(length), type);
 	}
-	else
+
+	return nullptr;
+}
+
+bool verifyTag(DataTag tag, stack<DataTag>& verifier) {
+	if (tag == directory || tag == file)
 	{
-		return nullptr;
+		verifier.push(tag);
+		return true;
 	}
-}
-
-void handleStuff(TreeIterator<DTO*>* iter, ifstream& fileStream) {
-
-	string line;
-	getline(fileStream, line);
-	stringstream ss(line);
-	string item;
-	getline(ss, item, '>');
-	DataTag tag = stringToDataTag(item);
-
-	switch (tag)
+	else if (tag == closeDir || tag == closeFile)
 	{
-	case directory: 
-	{
-		iter->insertChildAfter(getDirData(fileStream));
-		iter->childForth();
-		TreeIterator<DTO*>* childIter = new TreeIterator<DTO*>(*iter);
-		handleStuff(childIter, fileStream);
-	}
-		break;
-	case closeDir:
-		//Check
-		break;
-	case file:
-		//Handle file data
-		//Add new tree with data
-		//Advance iterator
-		break;
-	case closeFile:
-		//Check
-		break;
-	default:
-		break;
-	}
-}
-
-
-DataTag parseTag(stringstream& ss) {
-	string item;
-	getline(ss, item, '>');
-	return stringToDataTag(item);
-}
-
-string parseName(stringstream& ss) {
-	string item;
-	getline(ss, item, '<');
-	return item;
-}
-
-Tree<DTO*>* parseFile(ifstream& fileStream) {
-	string line;
-	getline(fileStream, line);
-
-	stringstream ss(line);
-
-	Tree<DTO*> tree = Tree<DTO*>(nullptr);
-	DTO temp;
-
-	temp.tag = parseTag(ss);
-	temp.name = parseName(ss);
-
-	if (temp.tag == directory)
-	{
-		tree = Tree<DTO*>(new DTO(temp));
-		if (getline(fileStream, line))
+		if ((int)verifier.top() == (int)tag - 1)
 		{
-			temp.tag = parseTag(ss);
-			if (temp.tag != closeDir)
-			{
-				TreeIterator<DTO*> iter = TreeIterator<DTO*>(&tree);
-				
-			}
-
+			verifier.pop();
+			return true;
+		}
+		else
+		{
+			return false;
 		}
 	}
-	else
+	return false;
+}
+
+void validateDTO(DTO* data) {
+	if (data == nullptr)
 	{
-		logic_error("No main directory");
+		throw logic_error("Invalid Data");
 	}
+}
 
-	
+void handleSection(TreeIterator<DTO*>* iter, ifstream& fileStream, stack<DataTag>& verifier) {
+	string line;
+	while (getline(fileStream, line))
+	{
+		cout << line << endl;
 
-	return &tree;
+		stringstream ss(line);
+
+		DataTag tag = parseTag(ss);
+
+		if (!verifyTag(tag, verifier))
+		{
+			throw logic_error("Invalid Nesting");
+		}
+
+		switch (tag)
+		{
+		case directory:
+		{
+			DTO* data = getDirData(fileStream);
+
+			validateDTO(data);
+
+		
+			iter->appendChild(data);
+			iter->childEnd();
+			
+			iter->down();
+		}
+		break;
+		case closeDir:
+		{
+			iter->up();
+			iter->childBack();
+		}
+		break;
+		case file:
+		{
+			DTO* data = getFileData(fileStream);
+
+			validateDTO(data);
+
+			iter->appendChild(data);
+			iter->childEnd();
+		}
+		break;
+		default:
+			break;
+		}
+	}
+}
+
+
+
+void parseFile(ifstream& fileStream, Tree<DTO*>& emptyTree) {
+	string line;
+	getline(fileStream, line);
+
+	cout << line << endl;
+
+	stringstream ss(line);
+
+	DataTag tag = parseTag(ss);
+
+	if (tag == directory) {
+		DTO* data = getDirData(fileStream);
+		if (data != nullptr)
+		{
+			emptyTree = Tree<DTO*>(data);
+			TreeIterator<DTO*>* iter = new TreeIterator<DTO*>(&emptyTree);
+			stack<DataTag> verifier;
+			verifier.push(directory);
+			handleSection(iter, fileStream, verifier);
+			if (!verifier.empty())
+			{
+				throw logic_error("Invalid Nesting");
+			}
+		}
+		else
+		{
+			throw logic_error("Invalid main directory");
+		}
+	}
+	else {
+		throw logic_error("No main directory");
+	}
 }
 
 void parseLine(string line) {
@@ -226,21 +244,182 @@ void parseLine(string line) {
 	}
 }
 
-Tree<DTO*>* readXMl(const string& fileName) {
+void readXMl(const string& fileName, Tree<DTO*>& emptyTree) {
 	stack<string> tagStack;
 	ifstream fileStream(fileName);
 
 	if (fileStream)
 	{
-		Tree<DTO*>* tree = parseFile(fileStream);
+		parseFile(fileStream, emptyTree);
 		fileStream.close();
-		return tree;
 	}
 	else
 	{
-		cout << "File not found" << endl;
-		Tree<DTO*> tree = Tree<DTO*>(nullptr);
-		return &tree;
+		throw logic_error("File not found");
 	}
 }
+
+bool getItemBasedOnPath(Tree<DTO*>* tree, string& path, Tree<DTO*>& foundItem) {
+	stringstream ss(path);
+	string item;
+	bool found = true;
+	getline(ss, item, '/');
+	if (tree->getData()->name == item)
+	{
+		TreeIterator<DTO*>* iter = new TreeIterator<DTO*>(tree);
+		while (getline(ss, item, '/'))
+		{
+			found = false;
+			while (iter->childValid() && !found)
+			{
+				if (iter->childItem()->name == item)
+				{
+					iter->down();
+					found = true;
+				}
+				else
+				{
+					iter->childForth();
+				}
+			}
+		}
+		if (found)
+		{
+			foundItem = *iter->node;
+			return true;
+		}
+		else
+			return false;
+	}
+	else 
+		return false;
+}
+
+int getFolderContentAmount(Tree<DTO*>* tree) {
+	if (tree->data->tag != directory)
+	{
+		return -1;
+	}
+
+	int amount = 0;
+	TreeIterator<DTO*>* iter = new TreeIterator<DTO*>(tree);
+	while (iter->childValid())
+	{
+		amount += iter->childIter.item()->count();
+		iter->childForth();
+	}
+	return amount;
+}
+
+int getFolderMemoryUsage(Tree<DTO*>* tree)
+{
+	if (tree->data->tag != directory)
+	{
+		return -1;
+	}
+	int amount = 0;
+	queue<Tree<DTO*>*> q;
+	q.push(tree);
+	while (!q.empty()) {
+		if (q.front()->data->tag == file)
+		{
+			amount += q.front()->data->length;
+		}
+		DListIterator<Tree<DTO*>*> iter = q.front()->children->getIterator();
+		while (iter.isValid())
+		{
+			q.push(iter.item());
+			iter.advance();
+		}
+		q.pop();
+	}
+	return amount;
+}
+
+
+bool getFilePath(string& searched, TreeIterator<DTO*> iter, string& path, bool isTop) {
+	bool found = false;
+	if (iter.item()->name == searched)
+	{
+		if(isTop)
+			path += iter.item()->name;
+		else
+			path += "/" + iter.item()->name;
+		return true;
+	}
+	while (iter.childValid()) {
+		TreeIterator<DTO*> child(iter);
+		child.down();
+		found = getFilePath(searched, child, path, false);
+		if (found)
+		{
+			if (isTop)
+				path = iter.item()->name + path;
+			else
+				path = "/" + iter.item()->name + path;
+			return true;
+		}
+		iter.childForth();
+	}
+	return false;
+}
+
+void displayFolder(TreeIterator<DTO*> iter)
+{
+	cout << iter.item()->name << endl;
+	while (iter.childValid()) {
+		cout << "\t" << iter.childItem()->name;
+		if (iter.childItem()->tag == file)
+		{
+			cout << "\t(size: " << iter.childItem()->length << " b)";
+		}
+		cout << endl;
+		iter.childForth();
+	}
+}
+
+bool displayFolderByPath(Tree<DTO*>* tree, string& path) {
+	Tree<DTO*>* foundItem = new Tree<DTO*>(nullptr);
+	if (getItemBasedOnPath(tree, path, *foundItem))
+	{
+		displayFolder(TreeIterator<DTO*>(foundItem));
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+
+bool prune(TreeIterator<DTO*> iter)
+{
+	if (!iter.childValid() && iter.item()->tag != file)
+	{
+		return true;
+	}
+	while (iter.childValid()) {
+		TreeIterator<DTO*> child(iter);
+		child.down();
+		if (prune(child))
+		{
+			iter.removeChild();
+		}
+		iter.childForth();
+	}
+	iter.resetIterator();
+	if (!iter.childValid() && iter.item()->tag != file)
+	{
+		return true;
+	}
+	return false;
+}
+
+
+
+
+
+
+
 
