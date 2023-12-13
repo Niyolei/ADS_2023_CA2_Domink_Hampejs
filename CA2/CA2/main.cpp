@@ -32,5 +32,12 @@ int main() {
 	path = "ADS_Single_LinkedList_Exercises";
 	displayFolderByPath(&tree, path);
 
+	TreeIterator<DTO*> iter2(&tree);
+	prune(iter2);
+
+	cout << "\n\nThe Pruned tree should be here" << endl;
+	path = "ADS_Single_LinkedList_Exercises";
+	displayFolderByPath(&tree, path);
+
 	return 0;
 }

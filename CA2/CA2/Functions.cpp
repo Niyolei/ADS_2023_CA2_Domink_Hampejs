@@ -393,6 +393,31 @@ bool displayFolderByPath(Tree<DTO*>* tree, string& path) {
 
 
 
+bool prune(TreeIterator<DTO*> iter)
+{
+	if (!iter.childValid() && iter.item()->tag != file)
+	{
+		return true;
+	}
+	while (iter.childValid()) {
+		TreeIterator<DTO*> child(iter);
+		child.down();
+		if (prune(child))
+		{
+			iter.removeChild();
+		}
+		iter.childForth();
+	}
+	iter.resetIterator();
+	if (!iter.childValid() && iter.item()->tag != file)
+	{
+		return true;
+	}
+	return false;
+}
+
+
+
 
 
 

@@ -324,6 +324,14 @@ namespace CA2Test
 			Assert::IsFalse(displayFolderByPath(&tree, path));
 		};
 
+		TEST_METHOD(pruneTest) {
+			Tree<DTO*> tree = Tree<DTO*>(nullptr);
+			readXMl("vs_sample_simple.xml", tree);
+			TreeIterator<DTO*> iter(&tree);
+			prune(iter);
+			Assert::AreEqual(9, tree.count());
+		}
+
 
 	
 	};
